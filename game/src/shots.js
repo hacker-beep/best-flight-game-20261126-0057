@@ -55,7 +55,9 @@ export function applyShot(game, name) {
   }
   if (name === 'approach') {
     game.startFlight();
-    game.setFlight(112, 0.32, 0.02, 15200, 11, 55);
+    // Offset the plane left of the centreline and park it closer to the
+    // runway so the strip reads beside the plane, not behind it.
+    game.setFlight(115, 0.4, -0.3, 15200, 11, 55);
     state.phase = PHASE.FLYING;
     state.time = 100;
     game.showToast('FINAL APPROACH', 'DPS runway ahead — gear down, nice and easy.', 999, 'good');
