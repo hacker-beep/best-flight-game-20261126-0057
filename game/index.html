@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nusantara Skies — CGK to DPS</title>
+<link rel="stylesheet" href="./src/style.css">
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.module.min.js"
+  }
+}
+</script>
+</head>
+<body>
+<canvas id="scene" aria-label="Nusantara Skies: fly the island-hopper from Jakarta to Denpasar"></canvas>
+<div id="flash"></div>
+
+<div id="hud">
+  <!-- Top-left: flight data -->
+  <div class="panel" id="panel-flight">
+    <div class="row"><span>ALTITUDE</span><b id="hud-alt">12,000 ft</b></div>
+    <div class="row"><span>SPEED</span><b id="hud-spd">480 kts</b></div>
+    <div class="row"><span>FUEL</span><b id="hud-fuel">78%</b></div>
+    <div class="bar"><div id="fuel-bar"></div></div>
+  </div>
+
+  <!-- Top-right: compass -->
+  <div class="panel" id="panel-compass">
+    <div id="compass">
+      <span class="c-n">N</span><span class="c-e">E</span><span class="c-s">S</span><span class="c-w">W</span>
+      <div id="compass-needle">▲</div>
+    </div>
+    <div id="hud-hdg">273°</div>
+  </div>
+
+  <!-- Top-centre: score -->
+  <div id="panel-score">
+    <div id="hud-score">0</div>
+    <div id="hud-combo"></div>
+    <div id="hud-stage">STAGE 1 — KEPULAUAN SERIBU</div>
+  </div>
+
+  <!-- Left: mission -->
+  <div class="panel slim" id="panel-mission">
+    <div class="panel-title">✈ MISSION · CGK → DPS</div>
+    <div id="hud-mission">Rings 0/12 • Fuel 100%</div>
+    <div class="winlose"><span class="win">WIN: land on the DPS runway</span><br><span class="lose">LOSE: fuel empty or hull gone</span></div>
+  </div>
+
+  <!-- Right: route -->
+  <div class="panel slim" id="panel-route">
+    <div class="panel-title">ROUTE</div>
+    <div id="route-track"><span class="rt-dot">●</span><span class="rt-line"></span><span class="rt-dot">●</span><div id="route-dot">✈</div></div>
+    <div class="rt-labels"><span>CGK</span><span>DPS</span></div>
+    <div id="hud-route-label">CGK → DPS • 120 nm left</div>
+    <div id="hud-next">NEXT RING 2.3 nm</div>
+  </div>
+
+  <!-- Bottom-left: keys -->
+  <div class="panel slim" id="panel-keys">
+    ← → steer &nbsp;·&nbsp; ↑ ↓ climb / descend &nbsp;·&nbsp; SPACE boost &nbsp;·&nbsp; P pause &nbsp;·&nbsp; TAB map
+  </div>
+
+  <!-- Bottom-centre: throttle + hull -->
+  <div class="panel slim" id="panel-bars">
+    <div class="bar-row"><span>THR</span><div class="bar"><div id="throttle-bar"></div></div></div>
+    <div class="bar-row"><span>HULL</span><div class="bar"><div id="hull-bar"></div></div></div>
+  </div>
+
+  <!-- Bottom-right: instruments + buttons -->
+  <div id="panel-instruments">
+    <div class="inst"><canvas id="attitude" width="84" height="84"></canvas><span>ATTITUDE</span></div>
+    <div class="inst"><canvas id="radar" width="84" height="84"></canvas><span>RADAR</span></div>
+    <div class="inst-btns">
+      <button id="btn-pause" type="button">❚❚</button>
+      <button id="btn-mute" type="button">SOUND ON</button>
+      <button id="btn-map" type="button">MAP</button>
+    </div>
+  </div>
+
+  <!-- Centre event text -->
+  <div id="toast-wrap" class="hidden"><div id="toast"></div><div id="toast-sub"></div></div>
+</div>
+
+<!-- Title screen -->
+<div id="screen-title" class="screen">
+  <div class="title-block">
+    <h1>NUSANTARA<br>SKIES</h1>
+    <p class="tagline">Island-hopper · Jakarta (CGK) → Denpasar (DPS)</p>
+    <p class="brief">Fly the rings, thread the storm, land the runway.<br>Fuel is life — green rings top you up.</p>
+    <div class="menu">
+      <button id="btn-start" type="button" class="primary">▶&nbsp; START FLIGHT</button>
+      <button id="btn-how" type="button">HOW TO FLY</button>
+      <button id="btn-route" type="button">ROUTE MAP</button>
+    </div>
+    <div id="how-to" class="hidden">
+      <b>Controls</b> — ← → steer · ↑ ↓ climb / descend · SPACE boost (burns fuel) · P pause · TAB route map · M sound<br>
+      <b>Win</b> — land on the DPS runway. <b>Lose</b> — fuel hits 0% or the storm shreds your hull.<br>
+      <b>Rings</b> — fly through gold rings for +500 (combo grows); green rings refuel +12%.
+    </div>
+  </div>
+</div>
+
+<!-- Pause screen -->
+<div id="screen-pause" class="screen hidden">
+  <div class="title-block">
+    <h2>PAUSED</h2>
+    <p class="brief">The islands will wait. Probably.</p>
+    <div class="menu">
+      <button id="btn-resume" type="button" class="primary">▶&nbsp; RESUME</button>
+      <button id="btn-restart" type="button">RESTART FLIGHT</button>
+    </div>
+  </div>
+</div>
+
+<!-- End screen (win / lose) -->
+<div id="screen-end" class="screen hidden">
+  <div class="title-block">
+    <h2 id="end-title" class="end-title good">FLIGHT COMPLETE!</h2>
+    <p id="end-sub" class="brief"></p>
+    <div id="end-stats"></div>
+    <div class="menu">
+      <button id="btn-fly-again" type="button" class="primary">↻&nbsp; FLY AGAIN</button>
+    </div>
+  </div>
+</div>
+
+<!-- Route map screen -->
+<div id="screen-map" class="screen hidden">
+  <div class="map-block">
+    <h2>ROUTE MAP · CGK → DPS</h2>
+    <canvas id="globe-canvas" width="640" height="400"></canvas>
+    <p class="brief">Jakarta (CGK) → Denpasar (DPS) · 741 nm · ETA 1h 20m · 12 rings · 1 storm front</p>
+    <div class="menu">
+      <button id="btn-close-map" type="button" class="primary">✕&nbsp; CLOSE MAP</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
