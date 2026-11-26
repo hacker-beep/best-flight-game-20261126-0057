@@ -34,11 +34,13 @@ export const CONFIG = {
   // Route: CGK -> DPS, three stages, distances in nm
   routeLengthNm: 120,
   // 3D chase camera (scene units; see world.js for the mapping)
-  // v3.1: pulled back from 11/1.6 — the v3 shots had the plane
-  // filling the frame and hiding the ring/runway. The refs show the
-  // plane at ~25-30% of frame width, with the world around it.
-  cameraBack: 14.5, // camera sits this far behind the plane
-  cameraHeight: 2.2, // camera sits this high above the plane
+  // v4: pulled in from 14.5 — the plane is LARGER in the lower
+  // third of the frame (the benchmark's chase views are big-plane),
+  // and the camera rides a touch higher so the next ring still
+  // clears the fin. The v3.1 pull-back hid the ring behind the
+  // plane; the v4 HUD frame + closer ring staging fixes that.
+  cameraBack: 12.5, // camera sits this far behind the plane
+  cameraHeight: 2.6, // camera sits this high above the plane
   cameraLookAhead: 34, // camera looks this far ahead of the plane
   fogNear: 90,
   fogFar: 300,

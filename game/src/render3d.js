@@ -577,7 +577,7 @@ function buildIsland(feature, rng) {
   return group;
 }
 
-function buildRing(feature) {
+function buildRing(feature, num) {
   const group = new THREE.Group();
   const color = feature.fuel ? 0x37d67a : 0xffd94d;
   const mat = new THREE.MeshStandardMaterial({
@@ -621,6 +621,27 @@ function buildRing(feature) {
   );
   glow.scale.set(16, 16, 1);
   group.add(glow);
+  // v4: the ring's number, floating in the middle of the hoop — the
+  // benchmark's rings all carry their number, and it is the detail
+  // that survives shrinking. Purely visual: a sprite, so it always
+  // faces the camera and never touches the sim.
+  const numTex = canvasTexture(256, 256, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.font = '900 150px Arial, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.lineWidth = 14;
+    g.strokeStyle = 'rgba(10, 20, 40, 0.85)';
+    g.strokeText(String(num), w / 2, h / 2 + 6);
+    g.fillStyle = feature.fuel ? '#d8ffe9' : '#ffffff';
+    g.fillText(String(num), w / 2, h / 2 + 6);
+  });
+  const numSprite = new THREE.Sprite(
+    new THREE.SpriteMaterial({ map: numTex, transparent: true, depthWrite: false }),
+  );
+  numSprite.scale.set(7, 7, 1);
+  numSprite.position.z = 0.6;
+  group.add(numSprite);
   // Focus item 3: pass burst — 24 sparks arranged on the ring
   // circle, hidden until the ring is flown through, then expanding
   // and fading on the sim clock (passedTick). Deterministic: the
@@ -1204,12 +1225,12 @@ export function createScene(canvas, seed) {
         scene.add(mesh);
         this.islands.push({ feature, mesh });
       }
-      for (const feature of world.rings) {
-        const mesh = buildRing(feature);
+      world.rings.forEach((feature, i) => {
+        const mesh = buildRing(feature, i + 1);
         mesh.position.set(lateralToX(feature.x), altToY(feature.alt), nmToZ(feature.atNm, 0));
         scene.add(mesh);
         this.rings.push({ feature, mesh });
-      }
+      });
       for (const feature of world.stormCells) {
         const mesh = buildStormCell(feature, rng);
         mesh.position.set(lateralToX(feature.x), altToY(feature.alt), nmToZ(feature.atNm, 0));

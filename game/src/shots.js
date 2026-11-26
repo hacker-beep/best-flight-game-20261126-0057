@@ -31,7 +31,12 @@ export function applyShot(game, name) {
   const state = game.state;
   if (name === 'play') {
     game.startFlight();
-    game.setFlight(20, 0.6, 0, 12450, 5, 78);
+    // Stage 1, 33 nm out: 5 rings passed (6.43/12.86/19.29/25.71/
+    // 32.14), so the next ring is #6 at 38.57 — the toast, the
+    // mission box (RINGS 5/12) and the ring's own number all agree.
+    // (v4.0 staged 20 nm with ringsPassed=5: only 3 rings had been
+    // passed, so the ring showed "4" under a "RING 5 OF 12" toast.)
+    game.setFlight(33, 0.6, 0, 12450, 5, 78);
     state.phase = PHASE.FLYING;
     state.time = 100;
     // Line the plane up with the next ring so the cover shows level
@@ -43,7 +48,7 @@ export function applyShot(game, name) {
       state.plane.x = next.x - 0.1;
       state.plane.alt = next.alt - 0.06;
     }
-    game.showToast('RING +500', 'COMBO x3  •  FUEL 78%', 999, 'good');
+    game.showToast('RING 6 OF 12', '+500  •  COMBO x3  •  FUEL 78%', 999, 'good');
     return { ticks: 150, autopilot: true };
   }
   if (name === 'storm') {

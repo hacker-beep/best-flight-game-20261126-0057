@@ -6,16 +6,13 @@
 // grader /output is the destination. Both runs must write identical
 // bytes, so this program reads nothing but the repository and the clock
 // never enters the output.
-// v3 (26 Nov): the user's 16 visual references as style target —
-// saturated stylised low-poly, faceted turquoise sea, palm-dense
-// islands, bold dashed rings, dynamic-weather storm, dressed
-// cliff airport. Same mission, same route, same rules; only the
-// picture got closer to what he wants.
-// v3 focus pass (26 Nov, same day): his six fixes — proportional
-// airliner; island/tree/hill/building variety; ring pass bursts;
-// storm turbulence; a demanding landing with glidepath + speed +
-// alignment indicators and a scored touchdown; a professional
-// flight-report score screen. All visual, all deterministic.
+// v4 (26 Nov, round 2): ONE variable — the "simulator frame" HUD
+// layer + graded results screen. Compass/HDG strip top-centre,
+// speed + altitude tapes on the edges, route mini-map top-right,
+// mission box top-left with score/rings/time, instruction bar along
+// the bottom, numbered rings, and a clean "DOWN AND STOPPED" results
+// screen with a big GOALS · SCORE · TIME line. Terrain, plane,
+// stages and flight model are untouched from v3.
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

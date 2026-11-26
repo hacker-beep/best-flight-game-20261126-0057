@@ -35,23 +35,25 @@ function showScreen(id) {
     const node = document.getElementById(name);
     if (node) node.classList.toggle('hidden', name !== id);
   }
-  document.getElementById('hud').classList.toggle('hidden', id === 'screen-title');
-  // v3.1: the end screen sits over the HUD — the top-centre score
-  // panel showed through the title. Hide it on the end screen and
-  // restore it on the next flight.
-  const scorePanel = document.getElementById('panel-score');
-  if (scorePanel) scorePanel.classList.toggle('hidden', id === 'screen-end');
+  // v4: the title AND the results screen sit over the 3D scene with
+  // the HUD hidden, so the big text is the whole frame — the v3 end
+  // screen had every HUD panel showing through around the report.
+  document.getElementById('hud').classList.toggle('hidden', id === 'screen-title' || id === 'screen-end');
 }
 
 function showEndScreen() {
   const s = state.stats;
   const title = document.getElementById('end-title');
   const sub = document.getElementById('end-sub');
+  const goals = document.getElementById('end-goals');
   const stats = document.getElementById('end-stats');
   if (state.phase === PHASE.LANDED) {
-    title.textContent = 'FLIGHT COMPLETE!';
+    // v4: the graded landing verdict is the biggest text on the
+    // results screen — "DOWN AND STOPPED", like the top entries'
+    // results screens, with goals / score / time as one big line.
+    title.textContent = 'DOWN AND STOPPED';
     title.className = 'end-title good';
-    sub.textContent = 'You landed on the DPS runway. Nusantara Skies thanks you for flying.';
+    sub.textContent = 'Flight complete — you landed on the DPS runway. Nusantara Skies thanks you for flying.';
   } else {
     title.textContent = state.endReason === 'fuel' ? 'OUT OF FUEL' : state.endReason === 'hull' ? 'HULL BREACH' : 'FLIGHT OVER';
     title.className = 'end-title bad';
@@ -59,6 +61,10 @@ function showEndScreen() {
   }
   const mm = Math.floor(s.timeSec / 60);
   const ss = String(s.timeSec % 60).padStart(2, '0');
+  if (goals) {
+    goals.innerHTML =
+      `GOALS <b>${s.rings}/${s.ringsTotal}</b>  ·  SCORE <b>${s.score.toLocaleString('en-US')}</b>  ·  TIME <b>${mm}:${ss}</b>`;
+  }
   // Focus item 6: a professional flight report — rank badge +
   // headline score on top, then a ruled table of the flight, so
   // the result reads like a debrief, not a debug dump.
@@ -126,7 +132,9 @@ function stepSimulation() {
     handleEvents(events);
     state.phase = savedPhase;
     if (state.distanceNm > 30) resetAttract();
-    if (presses.start) {
+    // v4: SPACE starts the flight from the title screen, like the
+    // title says ("PRESS SPACE TO FLY") — Enter still works too.
+    if (presses.start || input.boost) {
       audio.unlock();
       game.startFlight();
       showScreen(null);

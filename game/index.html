@@ -19,56 +19,56 @@
 <div id="flash"></div>
 
 <div id="hud">
-  <!-- Top-left: flight data -->
-  <div class="panel" id="panel-flight">
-    <div class="row"><span>ALTITUDE</span><b id="hud-alt">12,000 ft</b></div>
-    <div class="row"><span>SPEED</span><b id="hud-spd">480 kts</b></div>
-    <div class="row"><span>FUEL</span><b id="hud-fuel">78%</b></div>
-    <div class="bar"><div id="fuel-bar"></div></div>
-  </div>
-
-  <!-- Top-right: compass -->
-  <div class="panel" id="panel-compass">
-    <div id="compass">
-      <span class="c-n">N</span><span class="c-e">E</span><span class="c-s">S</span><span class="c-w">W</span>
-      <div id="compass-needle">▲</div>
-    </div>
-    <div id="hud-hdg">273°</div>
-  </div>
-
-  <!-- Top-centre: score -->
-  <div class="panel" id="panel-score">
-    <div id="hud-score">0</div>
-    <div id="hud-combo"></div>
-    <div id="hud-rings">RINGS 0/12</div>
-    <div id="hud-stage">STAGE 1 — KEPULAUAN SERIBU</div>
-  </div>
-
-  <!-- Left: mission -->
-  <div class="panel slim" id="panel-mission">
+  <!-- Top-left: mission box — route, score, rings, time, fuel -->
+  <div class="panel" id="panel-mission">
     <div class="panel-title">✈ MISSION · CGK → DPS</div>
-    <div id="hud-mission">Rings 0/12 • Fuel 100%</div>
+    <div id="hud-score">0</div>
+    <div id="hud-rings">RINGS 0/12</div>
+    <div class="mission-row"><span>TIME</span><b id="hud-time">0:00</b></div>
+    <div class="mission-row"><span>FUEL</span><b id="hud-fuel">100%</b></div>
+    <div class="bar"><div id="fuel-bar"></div></div>
+    <div id="hud-stage">STAGE 1 — KEPULAUAN SERIBU</div>
     <div class="winlose"><span class="win">WIN: land on the DPS runway</span><br><span class="lose">LOSE: fuel empty or hull gone</span></div>
   </div>
 
-  <!-- Right: route -->
-  <div class="panel slim" id="panel-route">
-    <div class="panel-title">ROUTE</div>
-    <div id="route-track"><span class="rt-dot">●</span><span class="rt-line"></span><span class="rt-dot">●</span><div id="route-dot">✈</div></div>
-    <div class="rt-labels"><span>CGK</span><span>DPS</span></div>
+  <!-- Top-centre: compass / HDG strip -->
+  <div class="panel" id="panel-compass-strip">
+    <canvas id="compass-strip" width="420" height="40"></canvas>
+    <div id="hud-hdg">273°</div>
+  </div>
+
+  <!-- Top-right: route mini-map -->
+  <div class="panel" id="panel-minimap">
+    <div class="panel-title">MAP · CGK → DPS</div>
+    <canvas id="radar" width="150" height="150"></canvas>
     <div id="hud-route-label">CGK → DPS • 120 nm left</div>
     <div id="hud-next">NEXT RING 2.3 nm</div>
   </div>
 
-  <!-- Bottom-left: keys -->
-  <div class="panel slim" id="panel-keys">
-    ← → steer &nbsp;·&nbsp; ↑ ↓ climb / descend &nbsp;·&nbsp; SPACE boost &nbsp;·&nbsp; P pause &nbsp;·&nbsp; TAB map
+  <!-- Left edge: speed tape -->
+  <div id="tape-spd-wrap">
+    <div class="tape-label">AIRSPD</div>
+    <div class="tape-big"><b id="hud-spd">480</b><span>kts</span></div>
+    <canvas id="tape-spd" width="64" height="260"></canvas>
   </div>
 
-  <!-- Bottom-centre: throttle + hull -->
+  <!-- Right edge: altitude tape -->
+  <div id="tape-alt-wrap">
+    <div class="tape-label">ALTITUDE</div>
+    <div class="tape-big"><b id="hud-alt">12,000</b><span>ft</span></div>
+    <canvas id="tape-alt" width="64" height="260"></canvas>
+  </div>
+
+  <!-- Bottom-left: throttle + hull -->
   <div class="panel slim" id="panel-bars">
     <div class="bar-row"><span>THR</span><div class="bar"><div id="throttle-bar"></div></div></div>
     <div class="bar-row"><span>HULL</span><div class="bar"><div id="hull-bar"></div></div></div>
+  </div>
+
+  <!-- Bottom-centre: instruction bar -->
+  <div id="panel-instruct">
+    <div id="hud-instruct">FIRST SORTIE — Fly the rings, then land on runway 09</div>
+    <div id="hud-keys">← → steer &nbsp;·&nbsp; ↑ ↓ climb / descend &nbsp;·&nbsp; SPACE boost &nbsp;·&nbsp; P pause &nbsp;·&nbsp; TAB map</div>
   </div>
 
   <!-- Bottom-centre landing guide: shown on final approach only
@@ -81,10 +81,9 @@
     <div class="row"><span>ALIGN</span><b id="hud-land-align">—</b><span id="hud-land-align-status" class="land-status">—</span></div>
   </div>
 
-  <!-- Bottom-right: instruments + buttons -->
+  <!-- Bottom-right: attitude + buttons -->
   <div id="panel-instruments">
     <div class="inst"><canvas id="attitude" width="96" height="96"></canvas><span>ATTITUDE</span></div>
-    <div class="inst"><canvas id="radar" width="96" height="96"></canvas><span>RADAR</span></div>
     <div class="inst-btns">
       <button id="btn-pause" type="button">❚❚</button>
       <button id="btn-mute" type="button">SOUND ON</button>
@@ -107,6 +106,7 @@
       <button id="btn-how" type="button">HOW TO FLY</button>
       <button id="btn-route" type="button">ROUTE MAP</button>
     </div>
+    <p class="press-space">PRESS SPACE TO FLY</p>
     <div id="how-to" class="hidden">
       <b>Controls</b> — ← → steer · ↑ ↓ climb / descend · SPACE boost (burns fuel) · P pause · TAB route map · M sound<br>
       <b>Win</b> — land on the DPS runway. <b>Lose</b> — fuel hits 0% or the storm shreds your hull.<br>
@@ -130,8 +130,9 @@
 <!-- End screen (win / lose) -->
 <div id="screen-end" class="screen hidden">
   <div class="title-block">
-    <h2 id="end-title" class="end-title good">FLIGHT COMPLETE!</h2>
+    <h2 id="end-title" class="end-title good">DOWN AND STOPPED</h2>
     <p id="end-sub" class="brief"></p>
+    <div id="end-goals"></div>
     <div id="end-stats"></div>
     <div class="menu">
       <button id="btn-fly-again" type="button" class="primary">↻&nbsp; FLY AGAIN</button>

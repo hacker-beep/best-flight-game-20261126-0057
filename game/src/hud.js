@@ -1,7 +1,13 @@
 // Nusantara Skies — the HUD. One clear job: show the flight. It owns
-// every DOM readout (altitude, speed, fuel, heading, score, mission,
-// route, throttle, hull) and the two mini instruments (attitude
-// indicator and radar). It decides nothing; main.js hands it the state.
+// every DOM readout and the four canvas instruments (compass strip,
+// speed tape, altitude tape, route mini-map, attitude). It decides
+// nothing; main.js hands it the state.
+//
+// v4 — the "simulator frame": the HUD is dense on all four edges so
+// the game reads as a flight sim even shrunk to a thumbnail — a
+// compass/HDG strip across the top, speed and altitude tapes on the
+// left and right edges, a route mini-map top-right, a mission box
+// top-left, and an instruction bar along the bottom.
 import { CONFIG } from './config.js';
 
 function el(id) {
@@ -47,73 +53,188 @@ function drawAttitude(canvas, bank, pitch) {
   g.stroke();
 }
 
-function drawRadar(canvas, state) {
+// Compass strip: a scrolling heading tape across the top centre.
+// Cardinals on top, degree ticks below, gold caret dead centre.
+function drawCompassStrip(canvas, heading) {
   const g = canvas.getContext('2d');
   const w = canvas.width;
   const h = canvas.height;
   const cx = w / 2;
-  const cy = h / 2;
-  const R = w / 2 - 6;
+  const pxPerDeg = 3.2; // about ±65° visible
+  const cardinals = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SW', 270: 'W', 315: 'NW' };
   g.clearRect(0, 0, w, h);
-  g.fillStyle = 'rgba(8, 24, 16, 0.85)';
-  g.beginPath();
-  g.arc(cx, cy, R, 0, Math.PI * 2);
-  g.fill();
-  g.strokeStyle = 'rgba(120, 255, 160, 0.5)';
-  g.lineWidth = 1;
-  for (const rr of [R / 3, (R * 2) / 3, R]) {
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  const base = Math.round(heading);
+  // Anchor the tick grid to ABSOLUTE 5° marks (not to the heading):
+  // the labels live on multiples of 15°/45°, and a heading-anchored
+  // grid never lands on them (274° + 5k never hits a multiple of
+  // 15) — the v4.0 strip drew ticks but no letters at all.
+  const start = Math.floor((base - 70) / 5) * 5;
+  for (let deg = start; deg <= base + 70; deg += 5) {
+    const dd = ((deg - base + 540) % 360) - 180; // signed offset, -180..180
+    if (dd < -70 || dd > 70) continue;
+    const d = ((deg % 360) + 360) % 360; // absolute degree 0..359
+    const x = cx + dd * pxPerDeg;
+    if (x < -10 || x > w + 10) continue;
+    const label = cardinals[d];
+    const major = d % 15 === 0;
+    g.strokeStyle = major ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)';
+    g.lineWidth = major ? 2 : 1;
     g.beginPath();
-    g.arc(cx, cy, rr, 0, Math.PI * 2);
+    g.moveTo(x, label ? 15 : 21);
+    g.lineTo(x, label ? 30 : 26);
     g.stroke();
+    if (label) {
+      g.fillStyle = label === 'N' ? '#ff5d5d' : '#ffffff';
+      g.font = '700 13px Arial, sans-serif';
+      g.fillText(label, x, 9);
+    } else if (major) {
+      g.fillStyle = 'rgba(214,233,255,0.9)';
+      g.font = '600 10px Arial, sans-serif';
+      g.fillText(String(d).padStart(3, '0'), x, 35);
+    }
   }
+  // Centre caret: gold triangle at the top, pointing down at the
+  // current heading.
+  g.fillStyle = '#ffd94d';
   g.beginPath();
-  g.moveTo(cx, cy - R);
-  g.lineTo(cx, cy + R);
-  g.moveTo(cx - R, cy);
-  g.lineTo(cx + R, cy);
-  g.stroke();
-  // Sweep.
-  const sweep = (state.time * 1.4) % (Math.PI * 2);
-  const grad = g.createConicGradient ? g.createConicGradient(sweep, cx, cy) : null;
-  if (grad) {
-    grad.addColorStop(0, 'rgba(120,255,160,0.5)');
-    grad.addColorStop(0.12, 'rgba(120,255,160,0)');
-    grad.addColorStop(1, 'rgba(120,255,160,0)');
-    g.fillStyle = grad;
-    g.beginPath();
-    g.moveTo(cx, cy);
-    g.arc(cx, cy, R, 0, Math.PI * 2);
-    g.fill();
-  }
-  // Blips: rings ahead (gold/green), storm cells (red), runway (white).
-  const dist = state.distanceNm;
-  const plot = (atNm, x, color, size) => {
-    const ahead = atNm - dist;
-    if (ahead < 0 || ahead > CONFIG.viewDistanceNm) return;
-    const t = 1 - ahead / CONFIG.viewDistanceNm;
-    const bx = cx + x * R * 0.9;
-    const by = cy - R * 0.15 - t * R * 0.75;
-    g.fillStyle = color;
-    g.beginPath();
-    g.arc(bx, by, size, 0, Math.PI * 2);
-    g.fill();
-  };
-  for (const ring of state.world.rings) {
-    if (!ring.passed) plot(ring.atNm, ring.x, ring.fuel ? '#37d67a' : '#ffd94d', 3);
-  }
-  for (const cell of state.world.stormCells) {
-    plot(cell.atNm, cell.x, '#ff5d5d', 4);
-  }
-  plot(CONFIG.routeLengthNm - 1, 0, '#ffffff', 4);
-  // Own aircraft at the bottom centre.
-  g.fillStyle = '#ffffff';
-  g.beginPath();
-  g.moveTo(cx, cy + R - 8);
-  g.lineTo(cx - 4, cy + R - 1);
-  g.lineTo(cx + 4, cy + R - 1);
+  g.moveTo(cx - 7, 0);
+  g.lineTo(cx + 7, 0);
+  g.lineTo(cx, 8);
   g.closePath();
   g.fill();
 }
+
+// Vertical tape (speed on the left edge, altitude on the right):
+// scrolling tick marks with the current value pinned at the centre by
+// a gold marker. `flip` mirrors the tick side for the right edge.
+function drawTape(canvas, value, step, labelEvery, pxPerUnit, flip) {
+  const g = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const cy = h / 2;
+  g.clearRect(0, 0, w, h);
+  g.fillStyle = 'rgba(8, 20, 38, 0.55)';
+  g.fillRect(0, 0, w, h);
+  const half = (h / 2 - 6) / pxPerUnit;
+  const start = Math.floor((value - half) / step) * step;
+  const end = value + half;
+  g.textBaseline = 'middle';
+  for (let v = start; v <= end; v += step) {
+    const y = cy - (v - value) * pxPerUnit;
+    if (y < 2 || y > h - 2) continue;
+    const major = ((v % labelEvery) + labelEvery) % labelEvery === 0;
+    g.strokeStyle = major ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.35)';
+    g.lineWidth = major ? 2 : 1;
+    const x0 = flip ? w - 24 : 6;
+    const x1 = flip ? w - 6 : 24;
+    g.beginPath();
+    g.moveTo(major ? x0 : flip ? w - 14 : 14, y);
+    g.lineTo(x1, y);
+    g.stroke();
+    if (major) {
+      g.fillStyle = '#ffffff';
+      g.font = '600 11px Arial, sans-serif';
+      g.textAlign = flip ? 'right' : 'left';
+      g.fillText(v.toLocaleString('en-US'), flip ? w - 28 : 28, y);
+    }
+  }
+  // Gold centre marker: a band across the tape with a triangle
+  // pointing in from the outer edge.
+  g.fillStyle = '#ffd94d';
+  g.fillRect(0, cy - 2, w, 4);
+  g.beginPath();
+  if (flip) {
+    g.moveTo(w, cy - 9);
+    g.lineTo(w - 9, cy);
+    g.lineTo(w, cy + 9);
+  } else {
+    g.moveTo(0, cy - 9);
+    g.lineTo(9, cy);
+    g.lineTo(0, cy + 9);
+  }
+  g.closePath();
+  g.fill();
+}
+
+// Route mini-map (top-right): the whole CGK → DPS route at a glance
+// — island chain, rings, storm cells, runway, and the plane's
+// progress along the dashed route line.
+function drawRouteMap(canvas, state) {
+  const g = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  g.clearRect(0, 0, w, h);
+  g.fillStyle = 'rgba(6, 20, 34, 0.95)';
+  g.fillRect(0, 0, w, h);
+  const cx = w / 2;
+  const top = 16;
+  const bottom = h - 14;
+  const yFor = (atNm) => bottom - (atNm / CONFIG.routeLengthNm) * (bottom - top);
+  const xFor = (x) => cx + x * 34;
+  // Dashed route line, CGK (bottom) → DPS (top).
+  g.strokeStyle = 'rgba(255, 217, 77, 0.75)';
+  g.lineWidth = 2;
+  g.setLineDash([5, 4]);
+  g.beginPath();
+  g.moveTo(cx, bottom);
+  g.lineTo(cx, top);
+  g.stroke();
+  g.setLineDash([]);
+  // Islands: green dots along the route.
+  for (const isl of state.world.islands) {
+    g.fillStyle = '#58b368';
+    g.beginPath();
+    g.arc(xFor(isl.x), yFor(isl.atNm), isl.kind === 'destination' ? 4 : 2.5, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Storm cells: red dots.
+  for (const cell of state.world.stormCells) {
+    g.fillStyle = '#ff5d5d';
+    g.beginPath();
+    g.arc(xFor(cell.x), yFor(cell.atNm), 3.5, 0, Math.PI * 2);
+    g.fill();
+  }
+  // Rings: gold (green if a fuel ring); passed rings go dim.
+  for (const ring of state.world.rings) {
+    g.fillStyle = ring.fuel ? '#37d67a' : '#ffd94d';
+    g.beginPath();
+    g.arc(xFor(ring.x), yFor(ring.atNm), 3, 0, Math.PI * 2);
+    if (ring.passed) {
+      g.globalAlpha = 0.3;
+      g.fill();
+      g.globalAlpha = 1;
+    } else {
+      g.fill();
+    }
+  }
+  // Runway: white square at the top.
+  g.fillStyle = '#ffffff';
+  g.fillRect(cx - 4, top - 4, 8, 8);
+  // Own aircraft: white triangle at the current progress.
+  const py = yFor(Math.min(state.distanceNm, CONFIG.routeLengthNm));
+  g.fillStyle = '#ffffff';
+  g.beginPath();
+  g.moveTo(cx, py - 6);
+  g.lineTo(cx - 4.5, py + 4);
+  g.lineTo(cx + 4.5, py + 4);
+  g.closePath();
+  g.fill();
+  // Airport labels.
+  g.fillStyle = '#d6e9ff';
+  g.font = '700 10px Arial, sans-serif';
+  g.textAlign = 'left';
+  g.fillText('CGK', 4, h - 4);
+  g.textAlign = 'right';
+  g.fillText('DPS', w - 4, 12);
+}
+
+const INSTRUCTIONS = [
+  'FIRST SORTIE — Fly the rings, then land on runway 09',
+  'STORM FRONT — Thread the gap · dodge the lightning cells',
+  'FINAL — Gear down · stay on glidepath · land runway 09',
+];
 
 export function createHud() {
   const nodes = {
@@ -122,14 +243,15 @@ export function createHud() {
     fuel: el('hud-fuel'),
     fuelBar: el('fuel-bar'),
     hdg: el('hud-hdg'),
-    compassNeedle: el('compass-needle'),
+    compassStrip: el('compass-strip'),
+    tapeSpd: el('tape-spd'),
+    tapeAlt: el('tape-alt'),
     score: el('hud-score'),
-    combo: el('hud-combo'),
     rings: el('hud-rings'),
+    time: el('hud-time'),
     stage: el('hud-stage'),
-    mission: el('hud-mission'),
+    instruct: el('hud-instruct'),
     nextRing: el('hud-next'),
-    routeDot: el('route-dot'),
     routeLabel: el('hud-route-label'),
     throttle: el('throttle-bar'),
     hull: el('hull-bar'),
@@ -169,39 +291,34 @@ export function createHud() {
       const p = state.plane;
       const altFt = Math.round(1500 + p.alt * 13500);
       const spdKts = Math.round(p.speedKts);
-      setText(nodes.alt, 'alt', `${altFt.toLocaleString('en-US')} ft`);
-      setText(nodes.spd, 'spd', `${spdKts} kts`);
+      // Edge tapes + big numerals.
+      setText(nodes.alt, 'alt', altFt.toLocaleString('en-US'));
+      setText(nodes.spd, 'spd', `${spdKts}`);
+      if (nodes.tapeSpd) drawTape(nodes.tapeSpd, spdKts, 20, 100, 1.05, false);
+      if (nodes.tapeAlt) drawTape(nodes.tapeAlt, altFt, 500, 2000, 0.043, true);
       setText(nodes.fuel, 'fuel', `${Math.max(0, Math.round(state.fuel))}%`);
       setWidth(nodes.fuelBar, 'fuelBar', state.fuel);
       if (nodes.fuelBar) {
         nodes.fuelBar.style.background = state.fuel <= 25 ? '#ff5d5d' : state.fuel <= 50 ? '#ffb84d' : '#7dffa8';
       }
+      // Compass strip + heading.
       setText(nodes.hdg, 'hdg', `${String(Math.round(p.heading)).padStart(3, '0')}°`);
-      if (nodes.compassNeedle) {
-        nodes.compassNeedle.style.transform = `rotate(${p.heading}deg)`;
-      }
+      if (nodes.compassStrip) drawCompassStrip(nodes.compassStrip, p.heading);
+      // Mission box: score, rings, time.
       setText(nodes.score, 'score', state.score.toLocaleString('en-US'));
-      const comboText = state.combo > 1 ? `COMBO x${state.combo}` : '';
-      setText(nodes.combo, 'combo', comboText);
       setText(nodes.rings, 'rings', `RINGS ${state.ringsPassed}/${state.ringsTotal}`);
+      const mm = Math.floor(state.time / 60);
+      const ss = String(Math.floor(state.time % 60)).padStart(2, '0');
+      setText(nodes.time, 'time', `${mm}:${ss}`);
       const stage = CONFIG.stages[state.stageIndex];
       setText(nodes.stage, 'stage', stage ? stage.name : '');
-      const objectives = [
-        `Rings ${state.ringsPassed}/${state.ringsTotal}`,
-        `Fuel ${Math.max(0, Math.round(state.fuel))}%`,
-        state.stageIndex >= 2 ? 'Land on the DPS runway' : 'Reach Denpasar (DPS)',
-      ];
-      setText(nodes.mission, 'mission', objectives.join('  •  '));
+      setText(nodes.instruct, 'instruct', INSTRUCTIONS[state.stageIndex] || INSTRUCTIONS[0]);
       const next = state.world.rings.find((r) => !r.passed && !r.missed && r.atNm > state.distanceNm);
       setText(
         nodes.nextRing,
         'next',
         next ? `NEXT RING ${(next.atNm - state.distanceNm).toFixed(1)} nm` : 'NO RINGS AHEAD',
       );
-      const progress = Math.min(1, state.distanceNm / CONFIG.routeLengthNm);
-      if (nodes.routeDot) {
-        nodes.routeDot.style.left = `${4 + progress * 92}%`;
-      }
       setText(
         nodes.routeLabel,
         'route',
@@ -264,7 +381,7 @@ export function createHud() {
         drawAttitude(nodes.attitude, -(state.lastSteer || 0) * 0.45, (p.alt - 0.55) * 0.8);
       }
       if (nodes.radar) {
-        drawRadar(nodes.radar, state);
+        drawRouteMap(nodes.radar, state);
       }
     },
   };

@@ -51,77 +51,91 @@ html, body {
 .panel.slim { font-size: 13px; padding: 8px 11px; }
 .panel-title { color: #ffd94d; font-weight: 800; letter-spacing: 0.08em; font-size: 12px; margin-bottom: 2px; }
 
-#panel-flight { top: 12px; left: 12px; min-width: 182px; }
-#panel-flight .row { display: flex; justify-content: space-between; gap: 16px; }
-#panel-flight .row span { color: #d6e9ff; font-weight: 600; letter-spacing: 0.05em; font-size: 12px; }
-#panel-flight .row b { font-variant-numeric: tabular-nums; font-size: 16px; }
+/* v4 — simulator frame: mission box top-left, compass strip top
+   centre, route mini-map top-right, speed/altitude tapes on the
+   edges, instruction bar along the bottom. Every readout stays
+   crisp at 1280x720 and shrunk to 320px, even over a bright sky.
+   Flat dark panels, white text, gold accents. */
+#panel-mission { top: 12px; left: 12px; width: 208px; }
+#hud-score { font-size: 34px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9); }
+#hud-rings { color: #ffd94d; font-weight: 800; font-size: 15px; letter-spacing: 0.06em; margin: 2px 0 4px; }
+#panel-mission .mission-row { display: flex; justify-content: space-between; gap: 16px; }
+#panel-mission .mission-row span { color: #d6e9ff; font-weight: 600; letter-spacing: 0.05em; font-size: 12px; }
+#panel-mission .mission-row b { font-variant-numeric: tabular-nums; font-size: 15px; }
+#panel-mission .bar { margin: 5px 0 6px; }
+#hud-stage { font-size: 11px; letter-spacing: 0.06em; color: #fff; font-weight: 700; white-space: nowrap; }
+#hud-mission { font-size: 12px; color: #d6e9ff; font-weight: 600; line-height: 1.4; margin-top: 2px; }
+#panel-mission .winlose { margin-top: 4px; font-size: 12px; line-height: 1.55; font-weight: 600; }
+#panel-mission .win { color: #7dffa8; }
+#panel-mission .lose { color: #ff9a9a; }
 
-#panel-compass { top: 12px; right: 12px; text-align: center; width: 100px; }
-#compass {
-  position: relative;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.65);
-  background: rgba(8, 20, 38, 0.9);
-  font-size: 12px;
-  font-weight: 800;
-}
-#compass .c-n { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); }
-#compass .c-s { position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
-#compass .c-e { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); }
-#compass .c-w { position: absolute; left: 5px; top: 50%; transform: translateY(-50%); }
-#compass-needle {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffd94d;
-  font-size: 17px;
-}
-#hud-hdg { margin-top: 4px; font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
-
-#panel-score {
+#panel-compass-strip {
   position: absolute;
   top: 10px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-  padding: 8px 22px 9px;
+  padding: 7px 12px 6px;
 }
-#hud-score { font-size: 40px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9); }
-#hud-combo { color: #ffd94d; font-weight: 800; font-size: 15px; min-height: 19px; }
-#hud-rings { color: #ffd94d; font-weight: 800; font-size: 14px; letter-spacing: 0.06em; }
-#hud-stage { font-size: 13px; letter-spacing: 0.14em; color: #fff; font-weight: 700; }
+#compass-strip { display: block; }
+#hud-hdg { margin-top: 1px; font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; color: #ffd94d; }
 
-#panel-mission { top: 112px; left: 12px; max-width: 264px; }
-#panel-mission .winlose { margin-top: 3px; font-size: 12px; line-height: 1.55; font-weight: 600; }
-#panel-mission .win { color: #7dffa8; }
-#panel-mission .lose { color: #ff9a9a; }
-
-#panel-route { top: 142px; right: 12px; width: 202px; }
-#route-track { position: relative; height: 18px; margin: 4px 0 0; }
-#route-track .rt-line {
-  position: absolute; left: 8px; right: 8px; top: 8px;
-  border-top: 2px dashed rgba(255, 255, 255, 0.7);
+#panel-minimap { top: 12px; right: 12px; width: 178px; text-align: center; }
+#panel-minimap canvas {
+  display: block;
+  margin: 2px auto 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(8, 24, 16, 0.9);
 }
-#route-track .rt-dot { position: absolute; top: 2px; color: #ff5d5d; font-size: 12px; }
-#route-track .rt-dot:first-child { left: 0; }
-#route-track .rt-dot:nth-child(2) { right: 0; }
-#route-dot { position: absolute; top: -4px; left: 4%; font-size: 16px; transform: translateX(-50%); }
-.rt-labels { display: flex; justify-content: space-between; font-size: 11px; color: #d6e9ff; font-weight: 600; }
-#hud-route-label, #hud-next { margin-top: 3px; font-variant-numeric: tabular-nums; }
+#hud-route-label, #hud-next { margin-top: 4px; font-size: 12px; font-variant-numeric: tabular-nums; }
 #hud-next { color: #ffd94d; font-weight: 800; }
 
-#panel-keys { bottom: 12px; left: 12px; font-weight: 600; }
-#panel-bars { bottom: 12px; left: 50%; transform: translateX(-50%); width: 230px; }
+/* Edge tapes: big numeral + scrolling tape, flush to the frame edge
+   so the simulator frame reads even at thumbnail size. */
+#tape-spd-wrap, #tape-alt-wrap {
+  position: absolute;
+  top: 58%;
+  transform: translateY(-50%);
+  text-align: center;
+  background: rgba(8, 20, 38, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 9px;
+  padding: 7px 6px 8px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+#tape-spd-wrap { left: 12px; }
+#tape-alt-wrap { right: 12px; }
+.tape-label { color: #ffd94d; font-weight: 800; letter-spacing: 0.12em; font-size: 11px; }
+.tape-big { margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
+.tape-big b { font-size: 26px; font-weight: 800; }
+.tape-big span { font-size: 11px; color: #d6e9ff; font-weight: 700; margin-left: 3px; }
+#tape-spd-wrap canvas, #tape-alt-wrap canvas { display: block; border-radius: 5px; }
+
+/* Instruction bar along the bottom centre. */
+#panel-instruct {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  background: rgba(8, 20, 38, 0.92);
+  border: 1px solid rgba(255, 217, 77, 0.55);
+  border-radius: 9px;
+  padding: 8px 20px 7px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  max-width: 560px;
+}
+#hud-instruct { color: #ffd94d; font-weight: 800; font-size: 15px; letter-spacing: 0.05em; white-space: nowrap; }
+#hud-keys { font-size: 12px; color: #d6e9ff; font-weight: 600; margin-top: 2px; }
+
+#panel-bars { bottom: 12px; left: 12px; width: 190px; }
 .bar-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
 .bar-row span { font-size: 12px; color: #d6e9ff; width: 36px; font-weight: 700; }
 .bar { height: 10px; background: rgba(255, 255, 255, 0.22); border-radius: 5px; overflow: hidden; flex: 1; border: 1px solid rgba(255, 255, 255, 0.25); }
 .bar > div { height: 100%; width: 50%; background: #7dffa8; border-radius: 4px; }
-#panel-flight .bar { margin-top: 6px; }
 
 #panel-instruments {
   position: absolute;
@@ -157,7 +171,7 @@ html, body {
 
 #toast-wrap {
   position: absolute;
-  top: 29%;
+  top: 19%;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -166,7 +180,7 @@ html, body {
   padding: 8px 26px 12px;
   border-radius: 12px;
 }
-#toast { font-size: 48px; font-weight: 800; letter-spacing: 0.04em; }
+#toast { font-size: 40px; font-weight: 800; letter-spacing: 0.04em; }
 #toast-sub { font-size: 17px; color: #fff; font-weight: 600; }
 #toast-wrap.warn #toast { color: #ff9a9a; }
 #toast-wrap.good #toast { color: #ffd94d; }
@@ -190,6 +204,33 @@ html, body {
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
 }
 .title-block h2 { margin: 0; font-size: 44px; letter-spacing: 0.05em; }
+/* v4: the title screen's call to action — big, gold, pulsing. */
+.press-space {
+  margin: 22px 0 0;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  color: #ffd94d;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.75);
+  animation: pressPulse 1.4s ease-in-out infinite;
+}
+@keyframes pressPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+/* v4: the results screen's big moment line — goals, score, time in
+   one shout, above the flight report. */
+#end-goals {
+  margin-top: 14px;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+#end-goals b { color: #ffd94d; }
+/* v4: the verdict headline is the biggest text on the results screen. */
+#screen-end .title-block h2 { font-size: 62px; line-height: 1; }
 .tagline { color: #ffd94d; font-weight: 700; letter-spacing: 0.1em; margin: 10px 0 4px; }
 .brief { color: #e8f4ff; font-size: 15px; line-height: 1.5; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6); }
 .menu { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
@@ -253,7 +294,7 @@ html, body {
 /* Landing guide panel (focus item 5): left side under the mission
    panel — clear of the runway (centre) and the bottom HUD row. */
 #panel-landing {
-  top: 215px; left: 12px;
+  top: 272px; left: 12px;
   width: 300px; background: rgba(8, 20, 38, 0.94);
   border: 2px solid rgba(255, 217, 77, 0.6);
 }
