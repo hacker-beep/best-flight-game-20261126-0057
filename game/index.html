@@ -40,6 +40,7 @@
   <div class="panel" id="panel-score">
     <div id="hud-score">0</div>
     <div id="hud-combo"></div>
+    <div id="hud-rings">RINGS 0/12</div>
     <div id="hud-stage">STAGE 1 — KEPULAUAN SERIBU</div>
   </div>
 
@@ -68,6 +69,16 @@
   <div class="panel slim" id="panel-bars">
     <div class="bar-row"><span>THR</span><div class="bar"><div id="throttle-bar"></div></div></div>
     <div class="bar-row"><span>HULL</span><div class="bar"><div id="hull-bar"></div></div></div>
+  </div>
+
+  <!-- Bottom-centre landing guide: shown on final approach only
+       (focus item 5) — altitude vs the glidepath, speed vs the
+       approach limit, and centreline alignment. -->
+  <div class="panel hidden" id="panel-landing">
+    <div class="panel-title">🛬 LANDING · FINAL APPROACH</div>
+    <div class="row"><span>ALT</span><b id="hud-land-alt">—</b><span id="hud-land-alt-status" class="land-status">—</span></div>
+    <div class="row"><span>SPD</span><b id="hud-land-spd">—</b><span id="hud-land-spd-status" class="land-status">—</span></div>
+    <div class="row"><span>ALIGN</span><b id="hud-land-align">—</b><span id="hud-land-align-status" class="land-status">—</span></div>
   </div>
 
   <!-- Bottom-right: instruments + buttons -->

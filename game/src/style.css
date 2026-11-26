@@ -93,6 +93,7 @@ html, body {
 }
 #hud-score { font-size: 40px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9); }
 #hud-combo { color: #ffd94d; font-weight: 800; font-size: 15px; min-height: 19px; }
+#hud-rings { color: #ffd94d; font-weight: 800; font-size: 14px; letter-spacing: 0.06em; }
 #hud-stage { font-size: 13px; letter-spacing: 0.14em; color: #fff; font-weight: 700; }
 
 #panel-mission { top: 112px; left: 12px; max-width: 264px; }
@@ -208,19 +209,60 @@ html, body {
 .end-title.good { color: #7dffa8; }
 .end-title.bad { color: #ff9a9a; }
 #end-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px 20px;
   margin-top: 18px;
   background: rgba(8, 20, 38, 0.94);
   border: 2px solid rgba(255, 217, 77, 0.55);
   border-radius: 10px;
-  padding: 16px 22px;
+  padding: 18px 24px 14px;
   text-align: left;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
 }
-#end-stats div { display: flex; justify-content: space-between; gap: 12px; }
+/* Focus item 6: professional flight report — eyebrow label, rank
+   badge + headline score, gold rule, then a ruled stat table. */
+#end-stats .end-eyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #ffd94d;
+  text-align: center;
+  margin-bottom: 10px;
+}
+#end-stats .end-head { display: flex; align-items: center; justify-content: center; gap: 22px; }
+#end-stats .end-rank { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#end-stats .rank-badge {
+  width: 64px; height: 64px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; font-weight: 900; line-height: 1;
+  border: 3px solid #ffd94d; color: #ffd94d;
+  background: radial-gradient(circle at 35% 30%, rgba(255, 217, 77, 0.28), rgba(255, 217, 77, 0.06));
+}
+#end-stats .rank-badge.rank-a { border-color: #7dffa8; color: #7dffa8; background: radial-gradient(circle at 35% 30%, rgba(125, 255, 168, 0.28), rgba(125, 255, 168, 0.06)); }
+#end-stats .rank-badge.rank-b { border-color: #7dc4ff; color: #7dc4ff; background: radial-gradient(circle at 35% 30%, rgba(125, 196, 255, 0.28), rgba(125, 196, 255, 0.06)); }
+#end-stats .rank-badge.rank-c { border-color: #c9d4e2; color: #c9d4e2; background: radial-gradient(circle at 35% 30%, rgba(201, 212, 226, 0.28), rgba(201, 212, 226, 0.06)); }
+#end-stats .rank-label { font-size: 10px; font-weight: 800; letter-spacing: 0.25em; color: #d6e9ff; }
+#end-stats .end-score { display: flex; flex-direction: column; gap: 2px; }
+#end-stats .end-score span { font-size: 11px; font-weight: 800; letter-spacing: 0.2em; color: #d6e9ff; }
+#end-stats .end-score b { font-size: 42px; font-weight: 900; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
+#end-stats .end-rule { height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 217, 77, 0.7), transparent); margin: 14px 0 6px; }
+#end-stats .end-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+#end-stats .end-rows div { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.09); }
+#end-stats .end-rows div:nth-last-child(-n+2) { border-bottom: none; }
 #end-stats span { color: #d6e9ff; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; }
 #end-stats b { font-variant-numeric: tabular-nums; font-size: 15px; }
+
+/* Landing guide panel (focus item 5): left side under the mission
+   panel — clear of the runway (centre) and the bottom HUD row. */
+#panel-landing {
+  top: 215px; left: 12px;
+  width: 300px; background: rgba(8, 20, 38, 0.94);
+  border: 2px solid rgba(255, 217, 77, 0.6);
+}
+#panel-landing .row { display: flex; gap: 8px; align-items: baseline; }
+#panel-landing .row span:first-child { width: 44px; color: #d6e9ff; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; }
+#panel-landing .row b { flex: 1; font-size: 14px; font-variant-numeric: tabular-nums; }
+.land-status { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; }
+.land-status.ok { color: #7dffa8; }
+.land-status.warn { color: #ffb84d; }
+.land-status.bad { color: #ff5d5d; }
 .map-block h2 { margin: 0 0 10px; font-size: 26px; letter-spacing: 0.06em; }
 #globe-canvas { border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.3); background: #0b1526; }

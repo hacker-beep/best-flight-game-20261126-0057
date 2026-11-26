@@ -85,11 +85,34 @@ export function createGame(seed) {
   function finishFlight(won, reason) {
     state.phase = won ? PHASE.LANDED : PHASE.CRASHED;
     state.endReason = reason;
+    // Touchdown quality (focus item 5): the landing is scored on
+    // alignment + height at the threshold — PERFECT needs centreline
+    // and low, GOOD is inside the window, ROUGH is a wobble in.
+    // Deterministic: a pure function of the sim state.
+    const p = state.plane;
+    const touchdown =
+      won && Math.abs(p.x) < 0.08 && p.alt < 0.2
+        ? 'PERFECT'
+        : won && Math.abs(p.x) < 0.14 && p.alt < 0.25
+          ? 'GOOD'
+          : won
+            ? 'ROUGH'
+            : null;
+    const touchdownBonus = touchdown === 'PERFECT' ? 300 : touchdown === 'GOOD' ? 150 : 0;
     const landingBonus = won
       ? Math.round(state.fuel) * CONFIG.landingFuelBonusPerPct +
-        Math.round(state.hull) * CONFIG.landingHullBonusPerPct
+        Math.round(state.hull) * CONFIG.landingHullBonusPerPct +
+        touchdownBonus
       : 0;
-    if (won) state.score += landingBonus;
+    if (won) {
+      state.score += landingBonus;
+      showToast(
+        touchdown === 'PERFECT' ? 'PERFECT LANDING!' : touchdown === 'GOOD' ? 'GOOD LANDING' : 'ROUGH LANDING',
+        `Touchdown bonus +${touchdownBonus}`,
+        2.5,
+        'good',
+      );
+    }
     state.stats = {
       score: state.score,
       rings: state.ringsPassed,
@@ -99,6 +122,8 @@ export function createGame(seed) {
       timeSec: Math.round(state.time),
       bestCombo: state.bestCombo,
       landingBonus,
+      touchdown,
+      touchdownBonus,
       rank:
         state.score >= 9000
           ? 'S'
@@ -233,10 +258,14 @@ export function createGame(seed) {
       }
     }
 
-    // Landing: the runway is at the end of the route.
+    // Landing: the runway is at the end of the route. Focus item 5:
+    // landing is more demanding now — centreline within 0.18 and low
+    // (alt under 0.28) — but the HUD landing guide (glidepath +
+    // speed + alignment) shows the whole final approach, so the
+    // pilot can set up early instead of guessing at the threshold.
     if (state.distanceNm >= CONFIG.routeLengthNm - 0.4) {
-      const aligned = Math.abs(p.x) < 0.22;
-      const low = p.alt < 0.3;
+      const aligned = Math.abs(p.x) < 0.18;
+      const low = p.alt < 0.28;
       if (aligned && low) {
         state.landed = true;
         finishFlight(true, 'landed');

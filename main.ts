@@ -6,10 +6,16 @@
 // grader /output is the destination. Both runs must write identical
 // bytes, so this program reads nothing but the repository and the clock
 // never enters the output.
-// v2 (26 Nov): visual-polish pass — refined airliner silhouette,
-// detailed islands, living sea, stronger storm, sharper HUD, dressed
-// runway. Same mission, same route, same rules; only the picture got
-// better.
+// v3 (26 Nov): the user's 16 visual references as style target —
+// saturated stylised low-poly, faceted turquoise sea, palm-dense
+// islands, bold dashed rings, dynamic-weather storm, dressed
+// cliff airport. Same mission, same route, same rules; only the
+// picture got closer to what he wants.
+// v3 focus pass (26 Nov, same day): his six fixes — proportional
+// airliner; island/tree/hill/building variety; ring pass bursts;
+// storm turbulence; a demanding landing with glidepath + speed +
+// alignment indicators and a scored touchdown; a professional
+// flight-report score screen. All visual, all deterministic.
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

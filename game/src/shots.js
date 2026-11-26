@@ -35,11 +35,13 @@ export function applyShot(game, name) {
     state.phase = PHASE.FLYING;
     state.time = 100;
     // Line the plane up with the next ring so the cover shows level
-    // flight straight at the ring, not a hard bank.
+    // flight straight at the ring, not a hard bank. v3: park the
+    // plane slightly below-left of the ring centre, so the dashed
+    // ring frames the plane instead of hiding behind the fin.
     const next = state.world.rings.find((r) => !r.passed && r.atNm > state.distanceNm);
     if (next) {
-      state.plane.x = next.x;
-      state.plane.alt = next.alt;
+      state.plane.x = next.x - 0.1;
+      state.plane.alt = next.alt - 0.06;
     }
     game.showToast('RING +500', 'COMBO x3  •  FUEL 78%', 999, 'good');
     return { ticks: 150, autopilot: true };
@@ -49,15 +51,33 @@ export function applyShot(game, name) {
     game.setFlight(58, 0.55, 0.05, 9800, 7, 64);
     state.phase = PHASE.FLYING;
     state.time = 100;
-    state.flash = 0.85;
+    // Stage the storm so a cell AND a branching bolt are in frame:
+    // put the plane 2.5 nm short of the nearest storm cell ahead
+    // (slightly offset so the cell is beside the plane, not behind
+    // it) and set flash to full so the bolt is mid-flash in the shot.
+    // v3.1: the v3 storm frame was empty grey-purple — no cell, no
+    // lightning — because the plane was staged 5 nm from the cells
+    // and the flash had decayed to zero by capture time.
+    const nextCell = state.world.stormCells.find((c) => c.atNm > state.distanceNm);
+    if (nextCell) {
+      state.distanceNm = nextCell.atNm - 2.5;
+      state.plane.x = Math.max(-0.6, Math.min(0.6, nextCell.x - 0.2));
+      state.plane.alt = Math.max(0.3, Math.min(0.75, nextCell.alt + 0.12));
+    }
+    state.flash = 1.0;
     game.showToast('STORM AHEAD!', 'Thread the gap — dodge the lightning cells.', 999, 'warn');
     return { ticks: 90, autopilot: true };
   }
   if (name === 'approach') {
     game.startFlight();
-    // Offset the plane left of the centreline and park it closer to the
-    // runway so the strip reads beside the plane, not behind it.
-    game.setFlight(115, 0.4, -0.3, 15200, 11, 55);
+    // Offset the plane further left of the centreline and park it
+    // closer to the runway so the strip reads beside the plane, not
+    // behind it — v3: the "09" numbers must be visible, not hidden
+    // under the fuselage. v3.1: stage 5.5 nm out (not 4) so the whole
+    // strip + threshold numbers fit above the bottom HUD instead of
+    // sliding under the instruments — close enough that the "09"
+    // still reads.
+    game.setFlight(113.5, 0.32, -0.5, 15200, 11, 55);
     state.phase = PHASE.FLYING;
     state.time = 100;
     game.showToast('FINAL APPROACH', 'DPS runway ahead — gear down, nice and easy.', 999, 'good');
@@ -71,7 +91,8 @@ export function applyShot(game, name) {
     state.phase = PHASE.LANDED;
     state.endReason = 'landed';
     state.toast = null; // drop the stage-1 briefing toast
-    const landingBonus = 41 * CONFIG.landingFuelBonusPerPct + 100 * CONFIG.landingHullBonusPerPct;
+    const landingBonus =
+      41 * CONFIG.landingFuelBonusPerPct + 100 * CONFIG.landingHullBonusPerPct + 300;
     state.score += landingBonus;
     state.stats = {
       score: state.score,
@@ -82,6 +103,8 @@ export function applyShot(game, name) {
       timeSec: 167,
       bestCombo: 5,
       landingBonus,
+      touchdown: 'PERFECT',
+      touchdownBonus: 300,
       rank: 'S',
     };
     return { ticks: 0, autopilot: false };

@@ -36,6 +36,11 @@ function showScreen(id) {
     if (node) node.classList.toggle('hidden', name !== id);
   }
   document.getElementById('hud').classList.toggle('hidden', id === 'screen-title');
+  // v3.1: the end screen sits over the HUD — the top-centre score
+  // panel showed through the title. Hide it on the end screen and
+  // restore it on the next flight.
+  const scorePanel = document.getElementById('panel-score');
+  if (scorePanel) scorePanel.classList.toggle('hidden', id === 'screen-end');
 }
 
 function showEndScreen() {
@@ -54,14 +59,30 @@ function showEndScreen() {
   }
   const mm = Math.floor(s.timeSec / 60);
   const ss = String(s.timeSec % 60).padStart(2, '0');
+  // Focus item 6: a professional flight report — rank badge +
+  // headline score on top, then a ruled table of the flight, so
+  // the result reads like a debrief, not a debug dump.
+  const rankClass = s.rank === 'S' ? 'rank-s' : s.rank === 'A' ? 'rank-a' : s.rank === 'B' ? 'rank-b' : 'rank-c';
+  const touchdownRow =
+    s.touchdown != null
+      ? `<div><span>TOUCHDOWN</span><b>${s.touchdown}${s.touchdownBonus ? `  ·  +${s.touchdownBonus}` : ''}</b></div>`
+      : '';
   stats.innerHTML =
-    `<div><span>SCORE</span><b>${s.score.toLocaleString('en-US')}</b></div>` +
-    `<div><span>RANK</span><b>${s.rank}</b></div>` +
+    `<div class="end-eyebrow">FLIGHT REPORT · CGK → DPS</div>` +
+    `<div class="end-head">` +
+    `<div class="end-rank"><span class="rank-badge ${rankClass}">${s.rank}</span><span class="rank-label">RANK</span></div>` +
+    `<div class="end-score"><span>FINAL SCORE</span><b>${s.score.toLocaleString('en-US')}</b></div>` +
+    `</div>` +
+    `<div class="end-rule"></div>` +
+    `<div class="end-rows">` +
     `<div><span>RINGS</span><b>${s.rings}/${s.ringsTotal}</b></div>` +
-    `<div><span>FUEL LEFT</span><b>${s.fuelLeft}%</b></div>` +
     `<div><span>BEST COMBO</span><b>x${s.bestCombo}</b></div>` +
     `<div><span>TIME</span><b>${mm}:${ss}</b></div>` +
-    (s.landingBonus ? `<div><span>LANDING BONUS</span><b>+${s.landingBonus}</b></div>` : '');
+    `<div><span>FUEL LEFT</span><b>${s.fuelLeft}%</b></div>` +
+    `<div><span>HULL LEFT</span><b>${s.hullLeft}%</b></div>` +
+    touchdownRow +
+    (s.landingBonus ? `<div><span>LANDING BONUS</span><b>+${s.landingBonus}</b></div>` : '') +
+    `</div>`;
   showScreen('screen-end');
 }
 

@@ -125,6 +125,7 @@ export function createHud() {
     compassNeedle: el('compass-needle'),
     score: el('hud-score'),
     combo: el('hud-combo'),
+    rings: el('hud-rings'),
     stage: el('hud-stage'),
     mission: el('hud-mission'),
     nextRing: el('hud-next'),
@@ -137,6 +138,13 @@ export function createHud() {
     flash: el('flash'),
     attitude: el('attitude'),
     radar: el('radar'),
+    landingPanel: el('panel-landing'),
+    landAlt: el('hud-land-alt'),
+    landAltStatus: el('hud-land-alt-status'),
+    landSpd: el('hud-land-spd'),
+    landSpdStatus: el('hud-land-spd-status'),
+    landAlign: el('hud-land-align'),
+    landAlignStatus: el('hud-land-align-status'),
   };
   const last = {};
 
@@ -175,6 +183,7 @@ export function createHud() {
       setText(nodes.score, 'score', state.score.toLocaleString('en-US'));
       const comboText = state.combo > 1 ? `COMBO x${state.combo}` : '';
       setText(nodes.combo, 'combo', comboText);
+      setText(nodes.rings, 'rings', `RINGS ${state.ringsPassed}/${state.ringsTotal}`);
       const stage = CONFIG.stages[state.stageIndex];
       setText(nodes.stage, 'stage', stage ? stage.name : '');
       const objectives = [
@@ -202,6 +211,39 @@ export function createHud() {
       setWidth(nodes.hull, 'hull', state.hull);
       if (nodes.hull) {
         nodes.hull.style.background = state.hull <= 30 ? '#ff5d5d' : '#7dffa8';
+      }
+      // Landing guide (focus item 5): shown on final approach only.
+      // Glidepath target: descend from alt 0.55 at 15 nm out to 0.12
+      // at the threshold. Speed target: stay under 500 kts (boost
+      // pushes past it). Alignment: centreline within 0.18 to land.
+      const onApproach = state.stageIndex >= 2 && state.phase === 'flying';
+      if (nodes.landingPanel) {
+        nodes.landingPanel.classList.toggle('hidden', !onApproach);
+      }
+      if (onApproach) {
+        const remaining = Math.max(0, CONFIG.routeLengthNm - state.distanceNm);
+        const targetAlt = Math.min(0.55, Math.max(0.12, 0.12 + (remaining / 15) * 0.25));
+        const targetAltFt = Math.round(1500 + targetAlt * 13500);
+        const devFt = altFt - targetAltFt;
+        const altStatus = Math.abs(devFt) <= 400 ? '✓ ON GLIDE' : devFt > 0 ? '▲ TOO HIGH' : '▼ TOO LOW';
+        setText(nodes.landAlt, 'landAlt', `${altFt.toLocaleString('en-US')} ft / ${targetAltFt.toLocaleString('en-US')}`);
+        setText(nodes.landAltStatus, 'landAltStatus', altStatus);
+        if (nodes.landAltStatus) {
+          nodes.landAltStatus.className = `land-status ${Math.abs(devFt) <= 400 ? 'ok' : 'bad'}`;
+        }
+        const spdStatus = spdKts > 500 ? '▲ TOO FAST' : spdKts >= 420 ? '✓ ON SPEED' : '▼ SLOW';
+        setText(nodes.landSpd, 'landSpd', `${spdKts} kts / ≤ 500`);
+        setText(nodes.landSpdStatus, 'landSpdStatus', spdStatus);
+        if (nodes.landSpdStatus) {
+          nodes.landSpdStatus.className = `land-status ${spdKts > 500 ? 'bad' : 'ok'}`;
+        }
+        const ax = Math.abs(p.x);
+        const alignStatus = ax < 0.08 ? '✓ CENTERED' : ax < 0.18 ? '◀▶ ALIGNING' : p.x < 0 ? '◀ OFF CENTER' : '▶ OFF CENTER';
+        setText(nodes.landAlign, 'landAlign', `±${ax.toFixed(2)} / 0.18`);
+        setText(nodes.landAlignStatus, 'landAlignStatus', alignStatus);
+        if (nodes.landAlignStatus) {
+          nodes.landAlignStatus.className = `land-status ${ax < 0.08 ? 'ok' : ax < 0.18 ? 'warn' : 'bad'}`;
+        }
       }
       // Toast (big centre event text).
       if (state.toast && state.time < state.toast.until) {

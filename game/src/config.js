@@ -34,8 +34,11 @@ export const CONFIG = {
   // Route: CGK -> DPS, three stages, distances in nm
   routeLengthNm: 120,
   // 3D chase camera (scene units; see world.js for the mapping)
-  cameraBack: 11, // camera sits this far behind the plane
-  cameraHeight: 1.6, // camera sits this high above the plane
+  // v3.1: pulled back from 11/1.6 — the v3 shots had the plane
+  // filling the frame and hiding the ring/runway. The refs show the
+  // plane at ~25-30% of frame width, with the world around it.
+  cameraBack: 14.5, // camera sits this far behind the plane
+  cameraHeight: 2.2, // camera sits this high above the plane
   cameraLookAhead: 34, // camera looks this far ahead of the plane
   fogNear: 90,
   fogFar: 300,
@@ -69,19 +72,21 @@ export const CONFIG = {
     },
   ],
 
-  // Palette — one flat-cartoon style for the whole game
+  // Palette — v3: saturated stylised low-poly (the 16 refs), never
+  // photoreal, never flat-blue prototype. Turquoise sea, yellow sand,
+  // green palms, bright sky; storm goes near-black with hot cores.
   palette: {
-    daySkyTop: '#5fb2ef',
+    daySkyTop: '#1f7fe0',
     daySkyBottom: '#cfeefb',
-    stormSkyTop: '#3a3f5c',
+    stormSkyTop: '#05060f',
     stormSkyBottom: '#6b6f8e',
     sunsetSkyTop: '#ff9a5c',
     sunsetSkyBottom: '#ffd9a0',
-    seaTop: '#2f7fc4',
-    seaBottom: '#155a8f',
+    seaTop: '#1fb6c9',
+    seaBottom: '#0e6f9e',
     islandGreen: '#58b368',
     islandDark: '#3f9e57',
-    islandSand: '#f2e2a4',
+    islandSand: '#f7e8a0',
     runwayGrey: '#5a5f6b',
     ringGold: '#ffd94d',
     ringGlow: '#fff3b0',
