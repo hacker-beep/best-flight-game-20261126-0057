@@ -15,6 +15,7 @@
 </head>
 <body>
 <canvas id="scene" aria-label="Nusantara Skies: fly the island-hopper from Jakarta to Denpasar"></canvas>
+<div id="vignette"></div>
 <div id="flash"></div>
 
 <div id="hud">
@@ -36,7 +37,7 @@
   </div>
 
   <!-- Top-centre: score -->
-  <div id="panel-score">
+  <div class="panel" id="panel-score">
     <div id="hud-score">0</div>
     <div id="hud-combo"></div>
     <div id="hud-stage">STAGE 1 — KEPULAUAN SERIBU</div>
@@ -71,8 +72,8 @@
 
   <!-- Bottom-right: instruments + buttons -->
   <div id="panel-instruments">
-    <div class="inst"><canvas id="attitude" width="84" height="84"></canvas><span>ATTITUDE</span></div>
-    <div class="inst"><canvas id="radar" width="84" height="84"></canvas><span>RADAR</span></div>
+    <div class="inst"><canvas id="attitude" width="96" height="96"></canvas><span>ATTITUDE</span></div>
+    <div class="inst"><canvas id="radar" width="96" height="96"></canvas><span>RADAR</span></div>
     <div class="inst-btns">
       <button id="btn-pause" type="button">❚❚</button>
       <button id="btn-mute" type="button">SOUND ON</button>

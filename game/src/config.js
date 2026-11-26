@@ -34,8 +34,8 @@ export const CONFIG = {
   // Route: CGK -> DPS, three stages, distances in nm
   routeLengthNm: 120,
   // 3D chase camera (scene units; see world.js for the mapping)
-  cameraBack: 12, // camera sits this far behind the plane
-  cameraHeight: 1.8, // camera sits this high above the plane
+  cameraBack: 11, // camera sits this far behind the plane
+  cameraHeight: 1.6, // camera sits this high above the plane
   cameraLookAhead: 34, // camera looks this far ahead of the plane
   fogNear: 90,
   fogFar: 300,

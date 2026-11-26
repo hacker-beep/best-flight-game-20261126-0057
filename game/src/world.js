@@ -36,12 +36,16 @@ export function buildWorld(seed) {
   let d = 4;
   while (d < CONFIG.routeLengthNm - 6) {
     const inStage1 = d < 45;
+    const kind = rng.pick(['green', 'green', 'green', 'mountain', 'town']);
     islands.push({
       atNm: d,
       x: rng.range(-0.85, 0.85),
       size: rng.range(0.55, 1.2), // relative island radius
-      kind: rng.pick(['green', 'green', 'green', 'mountain', 'town']),
+      kind,
       trees: rng.int(2, 7),
+      palms: rng.int(3, 6),
+      rocks: rng.int(2, 5),
+      lighthouse: kind === 'town' ? rng.chance(0.5) : false,
       houses: rng.int(0, 5),
       height: rng.range(1.5, 4.5),
     });
@@ -55,6 +59,9 @@ export function buildWorld(seed) {
     size: 2.2,
     kind: 'destination',
     trees: 8,
+    palms: 7,
+    rocks: 4,
+    lighthouse: true,
     houses: 9,
     height: 2.5,
   });
@@ -90,16 +97,26 @@ export function buildWorld(seed) {
     });
   }
 
+  // Ships at sea: small island-hoppers with wakes, for life on the water.
+  const ships = [];
+  for (let i = 0; i < 3; i++) {
+    ships.push({
+      atNm: 18 + i * 34 + rng.range(-4, 4),
+      x: rng.range(-0.7, 0.7),
+      size: rng.range(0.8, 1.2),
+    });
+  }
+
   // Decorative clouds in three parallax layers.
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 36; i++) {
     clouds.push({
       atNm: rng.range(0, CONFIG.routeLengthNm),
       x: rng.range(-1, 1),
       layer: rng.int(0, 2),
-      y: rng.range(18, 42),
+      y: rng.range(26, 48),
       size: rng.range(6, 16),
     });
   }
 
-  return { islands, rings, stormCells, clouds, seed };
+  return { islands, rings, stormCells, ships, clouds, seed };
 }

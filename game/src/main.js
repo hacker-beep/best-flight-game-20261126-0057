@@ -243,6 +243,11 @@ if (shotName) {
     if (savedPhase === PHASE.TITLE) state.phase = savedPhase;
     if (state.distanceNm > 30 && savedPhase === PHASE.TITLE) resetAttract();
   }
+  // Staging can trip a mid-flight toast (e.g. a lightning hit while
+  // the storm shot settles) — put the shot's own toast back.
+  if (shotName === 'storm') {
+    game.showToast('STORM AHEAD!', 'Thread the gap — dodge the lightning cells.', 999, 'warn');
+  }
   shotFrozen = true;
   shotStaged = true;
 } else {

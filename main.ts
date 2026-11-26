@@ -6,6 +6,10 @@
 // grader /output is the destination. Both runs must write identical
 // bytes, so this program reads nothing but the repository and the clock
 // never enters the output.
+// v2 (26 Nov): visual-polish pass — refined airliner silhouette,
+// detailed islands, living sea, stronger storm, sharper HUD, dressed
+// runway. Same mission, same route, same rules; only the picture got
+// better.
 import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -37,6 +41,7 @@ function checkLayout() {
   if (shots.length < 3 || shots.length > 4) fail(`expected 3-4 screenshots, found ${shots.length}`);
   for (const name of shots) {
     const size = statSync(join(shotsDir, name)).size;
+    if (size === 0) fail(`screenshot ${name} is empty`);
     if (size > 262144) fail(`screenshot ${name} is ${size} bytes, over the 256 KiB cap`);
   }
   return { gameDir, shotsDir, shots };
