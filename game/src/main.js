@@ -261,6 +261,12 @@ let shotFrozen = false;
 let shotStaged = false;
 if (shotName) {
   const plan = applyShot(game, shotName);
+  // v6 cover: lift the location banner clear of the ring — the toast
+  // at 19% clipped the ring's top arc in v5. Shot-scoped class, so
+  // the storm shot's toast is untouched.
+  if (shotName === 'play') {
+    document.getElementById('toast-wrap')?.classList.add('cover-shot');
+  }
   if (shotName === 'end') showEndScreen();
   else if (shotName === 'start') showScreen('screen-title');
   else showScreen(null);

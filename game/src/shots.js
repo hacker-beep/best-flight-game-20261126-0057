@@ -58,6 +58,19 @@ export function applyShot(game, name) {
       state.plane.x = next.x + 0.3;
       state.plane.alt = 0.55;
     }
+    // v6 (round 4 / final): ONE variable — the cover is a BANKED
+    // ring pass, not a symmetric diorama. The plane rolls ~22° left
+    // toward the ring (shotRoll, visual only — the flight model
+    // never sees it) with its nose yawed at the ring, and the camera
+    // sits 1.5 units right of the chase line (shotCamX) for a 3/4-
+    // rear view, so the ring reads as a gate being flown through and
+    // the sea + shadow read under the plane. (Takes at 35° / 5 units
+    // read as the plane falling sideways; 22° / 1.5 keeps the
+    // aircraft instantly parseable.) The banner rides higher
+    // (cover-shot class, main.js) so the ring + its number are
+    // fully unobstructed.
+    state.shotRoll = 0.38;
+    state.shotCamX = 1.5;
     game.showToast('WAYAG — RAJA AMPAT', 'RING 5 OF 12  •  +500  •  COMBO x3  •  FUEL 78%', 999, 'good');
     return { ticks: 60, autopilot: false };
   }

@@ -184,6 +184,9 @@ html, body {
 #toast-sub { font-size: 17px; color: #fff; font-weight: 600; }
 #toast-wrap.warn #toast { color: #ff9a9a; }
 #toast-wrap.good #toast { color: #ffd94d; }
+/* v6 cover: the banner rides higher so the ring's top arc clears it. */
+#toast-wrap.cover-shot { top: 11.5%; }
+#toast-wrap.cover-shot #toast { font-size: 32px; }
 
 /* Full-screen overlays */
 .screen {

@@ -1312,9 +1312,17 @@ export function createScene(canvas, seed) {
       // Plane pose: bank on steer, pitch on climb.
       plane.position.set(lateralToX(p.x), altToY(p.alt), 0);
       const steer = (state.lastSteer || 0);
-      plane.rotation.z = -steer * 0.45;
+      // v6 cover: staged bank + 3/4-rear camera, visual only — set
+      // only by the 'play' shot staging in shots.js, never by real
+      // flight. shotRoll rolls the plane toward the ring; shotCamX
+      // slides the chase camera right of the flight line.
+      const shotRoll = state.shotRoll || 0;
+      plane.rotation.z = -steer * 0.45 + shotRoll;
       plane.rotation.x = (state.lastClimb || 0) * -0.12;
-      plane.rotation.y = -steer * 0.1;
+      // v6 cover: the staged bank also yaws the nose toward the ring
+      // (visual only) so the plane reads as turning into the gate,
+      // not sliding past it.
+      plane.rotation.y = -steer * 0.1 + shotRoll * 0.35;
       // Focus item 4: TURBULENCE — in the storm the airframe is
       // buffeted on the sim clock (visual only, never sim state,
       // so the state hash is untouched). Three incommensurate sines
@@ -1328,7 +1336,9 @@ export function createScene(canvas, seed) {
       }
 
       // Chase camera: tight behind the plane, looking far ahead and slightly down.
-      const camX = lateralToX(p.x) * 0.85;
+      // v6 cover: shotCamX (set only by the 'play' shot) slides the
+      // camera right of the flight line for a 3/4-rear view.
+      const camX = lateralToX(p.x) * 0.85 + (state.shotCamX || 0);
       const camY = altToY(p.alt) + CONFIG.cameraHeight;
       const camZ = CONFIG.cameraBack;
       camera.position.set(camX, camY, camZ);
