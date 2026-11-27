@@ -31,25 +31,35 @@ export function applyShot(game, name) {
   const state = game.state;
   if (name === 'play') {
     game.startFlight();
-    // Stage 1, 33 nm out: 5 rings passed (6.43/12.86/19.29/25.71/
-    // 32.14), so the next ring is #6 at 38.57 — the toast, the
-    // mission box (RINGS 5/12) and the ring's own number all agree.
-    // (v4.0 staged 20 nm with ringsPassed=5: only 3 rings had been
-    // passed, so the ring showed "4" under a "RING 5 OF 12" toast.)
-    game.setFlight(33, 0.6, 0, 12450, 5, 78);
+    // v5 (round 3): ONE variable — the cover is now a NAMED
+    // Nusantara moment: low over a turquoise lagoon, flying at ring
+    // #5 (32.14 nm) with the BIGGEST stage-1 island (29.91 nm,
+    // size 1.52, cliffs + palms) close on the left and the ring
+    // ahead over the shallows. (v5.0 tried ring #6 at 33 nm: the
+    // ring sat high behind the toast and the mountain at 40.05 nm
+    // read as a small brown blob — the karst never landed.)
+    // Stage 1, 26.5 nm out: 4 rings passed, next ring #5 at 32.14.
+    // v5.1: only 60 settle ticks (capture ~27.4 nm) so the big
+    // island at 29.91 nm sits ~2.5 nm ahead — prominent on the left,
+    // not under the plane. (v5.0 used 150 ticks: capture 28.9 nm,
+    // the island 1 nm ahead filled the whole bottom of the frame
+    // and the plane looked about to crash into it.)
+    game.setFlight(26.5, 0.55, 0, 11950, 4, 78);
     state.phase = PHASE.FLYING;
     state.time = 100;
-    // Line the plane up with the next ring so the cover shows level
-    // flight straight at the ring, not a hard bank. v3: park the
-    // plane slightly below-left of the ring centre, so the dashed
-    // ring frames the plane instead of hiding behind the fin.
+    // v5.2: park the plane RIGHT of the ring (x = ring.x + 0.30)
+    // so the big island (29.91 nm, x=-0.45) falls clearly LEFT of
+    // the flight line instead of under the plane, and the ring sits
+    // upper-left, clear of the tail fin. Plane alt 0.55 lifts the
+    // ring's top arc clear of the toast (v5.1: alt 0.45 put the ring
+    // centre at ~300 px, top arc hidden behind the toast).
     const next = state.world.rings.find((r) => !r.passed && r.atNm > state.distanceNm);
     if (next) {
-      state.plane.x = next.x - 0.1;
-      state.plane.alt = next.alt - 0.06;
+      state.plane.x = next.x + 0.3;
+      state.plane.alt = 0.55;
     }
-    game.showToast('RING 6 OF 12', '+500  •  COMBO x3  •  FUEL 78%', 999, 'good');
-    return { ticks: 150, autopilot: true };
+    game.showToast('WAYAG — RAJA AMPAT', 'RING 5 OF 12  •  +500  •  COMBO x3  •  FUEL 78%', 999, 'good');
+    return { ticks: 60, autopilot: false };
   }
   if (name === 'storm') {
     game.startFlight();
